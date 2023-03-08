@@ -20,7 +20,6 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-
   late DateTime _selectedDateDay;
   String dropdownValue = list.first;
   String dropdownValueTask = listTask.first;
@@ -30,21 +29,17 @@ class _TasksPageState extends State<TasksPage> {
   void initState() {
     super.initState();
     print(user?.displayName);
+    MyController.initializeTasks();
   }
 
-
   calenderPicker() {
-    showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2023),
-        lastDate: DateTime(2026)
-    ).then((value) => {
-      setState((){
-        dateControl = value!;
-        dateController.text = formatter.format(dateControl!);
-      }),
-    });
+    showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2023), lastDate: DateTime(2026))
+        .then((value) => {
+              setState(() {
+                dateControl = value!;
+                dateController.text = formatter.format(dateControl!);
+              }),
+            });
   }
 
   String daysUntil(DateTime date) {
@@ -54,7 +49,7 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   void addTask() async {
-    await usersRef.doc(user?.uid).collection('Tasks').add({
+    await usersRef.doc(newUserId).collection('Tasks').add({
       'Titulo': titleController.text,
       'Descricao': descriptionController.text,
       'Recorrência': recurrenceController.text,
@@ -75,211 +70,209 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   void updateTask(String data) async {
-    await FirebaseFirestore.instance.collection('Users').doc(user?.uid).collection('Tasks').doc(data.toString()).update({
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(user?.uid)
+        .collection('Tasks')
+        .doc(data.toString())
+        .update({
       'Status': statusController.text,
     });
     Navigator.of(context).pop();
   }
 
   Future openDialog() => showDialog(
-    context: context,
-    builder: (context) => SingleChildScrollView(
-      child: AlertDialog(
-        content: StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(1.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Título',
-                      hintStyle: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    controller: titleController,
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(1.0),
-                  child: TextField(
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Descrição',
-                      hintStyle: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    controller: descriptionController,
-                  ),
-                ),
-
-                SizedBox(height: MediaQuery.of(context).size.width * 0.05),
-
-                Row(
-                  children: [
-                    const Text('Recorrência: ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width * .1,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.calendar_month, size: 20),
-                        onPressed: () {
-                          setState((){
-                            calenderPicker();
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-                Row(
-                  children: [
-                    const Text('Status: ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width * .1,
-                      ),
-                      child: DropdownButton<String>(
-                        value: dropdownValueTask,
-                        icon: const Icon(Icons.arrow_downward),
-                        elevation: 16,
-                        style: const TextStyle(color: Colors.black),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.red[300],
-                        ),
-                        onChanged: (String? value) {
-                          setState(() {
-                            dropdownValueTask = value!;
-                            statusController.text = dropdownValueTask;
-                          });
-                        },
-                        items: listTask.map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-
-                Row(
-                  children: [
-                    const Text('Tarefa: ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width * .1,
-                      ),
-                      child: DropdownButton<String>(
-                        value: dropdownValue,
-                        icon: const Icon(Icons.arrow_downward),
-                        elevation: 16,
-                        style: const TextStyle(color: Colors.black),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.red[300],
-                        ),
-                        onChanged: (String? value) {
-                          setState(() {
-                            dropdownValue = value!;
-                            recurrenceController.text = dropdownValue;
-                          });
-                          if(recurrenceController.text == "Recorrente"){
-                            dayController.text = formatterDay.format(dateControl!);
-                            print(dayController.text);
-                          }
-
-                          if(recurrenceController.text == "Anual"){
-                            monthController.text = formatterMonth.format(dateControl!);
-                          }
-                        },
-                        items: list.map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-
-              ],
-            );
-          }
-        ),
-        actions: [
-          TextButton(
-              onPressed: (){
-                addTask();
-              },
-              child: Text(
-                "Adicionar",
-                style: TextStyle(
-                  color: Colors.red[300],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-          )
-        ],
-      ),
-    ),
-  );
-
-  Future openDialogTask(Map data, String id) => showDialog(
-    context: context,
-    builder: (context) => SingleChildScrollView(
-      child: AlertDialog(
-        content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
+        context: context,
+        builder: (context) => SingleChildScrollView(
+          child: AlertDialog(
+            content: StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
               return Column(
                 children: [
-                  Text('Título: ' + data!['Titulo'],
+                  Padding(
+                    padding: const EdgeInsets.all(1.0),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Título',
+                        hintStyle: TextStyle(
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      controller: titleController,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(1.0),
+                    child: TextField(
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Descrição',
+                        hintStyle: TextStyle(
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      controller: descriptionController,
+                    ),
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.width * 0.05),
+                  Row(
+                    children: [
+                      const Text(
+                        'Recorrência: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * .1,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.calendar_month, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              calenderPicker();
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text(
+                        'Status: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * .1,
+                        ),
+                        child: DropdownButton<String>(
+                          value: dropdownValueTask,
+                          icon: const Icon(Icons.arrow_downward),
+                          elevation: 16,
+                          style: const TextStyle(color: Colors.black),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.red[300],
+                          ),
+                          onChanged: (String? value) {
+                            setState(() {
+                              dropdownValueTask = value!;
+                              statusController.text = dropdownValueTask;
+                            });
+                          },
+                          items: listTask.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text(
+                        'Tarefa: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * .1,
+                        ),
+                        child: DropdownButton<String>(
+                          value: dropdownValue,
+                          icon: const Icon(Icons.arrow_downward),
+                          elevation: 16,
+                          style: const TextStyle(color: Colors.black),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.red[300],
+                          ),
+                          onChanged: (String? value) {
+                            setState(() {
+                              dropdownValue = value!;
+                              recurrenceController.text = dropdownValue;
+                            });
+                            if (recurrenceController.text == "Recorrente") {
+                              dayController.text = formatterDay.format(dateControl!);
+                              print(dayController.text);
+                            }
+
+                            if (recurrenceController.text == "Anual") {
+                              monthController.text = formatterMonth.format(dateControl!);
+                            }
+                          },
+                          items: list.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  addTask();
+                },
+                child: Text(
+                  "Adicionar",
+                  style: TextStyle(
+                    color: Colors.red[300],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      );
+
+  Future openDialogTask(Map data, String id) => showDialog(
+        context: context,
+        builder: (context) => SingleChildScrollView(
+          child: AlertDialog(
+            content: StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                children: [
+                  Text(
+                    'Título: ' + data!['Titulo'],
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-
-                  Text('Descrição: ' + data!['Descricao'],
+                  Text(
+                    'Descrição: ' + data!['Descricao'],
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w300,
                     ),
                   ),
-
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: MediaQuery.of(context).size.width * .1,
@@ -309,24 +302,23 @@ class _TasksPageState extends State<TasksPage> {
                   ),
                 ],
               );
-            }
+            }),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  updateTask(id);
+                },
+                child: Text("EDITAR"),
+              )
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: (){
-              updateTask(id);
-            },
-            child: Text("EDITAR"),
-          )
-        ],
-      ),
-    ),
-  );
+      );
 
   Future<void> logout() async {
-    await FirebaseAuth.instance.signOut().then((user) =>
-        Modular.to.pushNamed('/'),
-    );
+    await FirebaseAuth.instance.signOut().then(
+          (user) => Modular.to.pushNamed('/'),
+        );
   }
 
   @override
@@ -334,7 +326,7 @@ class _TasksPageState extends State<TasksPage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          openDialog();
+          //  openDialog();
         },
         backgroundColor: Colors.red[300],
         child: const Icon(Icons.add_rounded),
@@ -344,7 +336,7 @@ class _TasksPageState extends State<TasksPage> {
       ),
       drawer: Drawer(
         child: ListView(
-          children: <Widget> [
+          children: <Widget>[
             Container(
               padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * .1,
@@ -353,7 +345,7 @@ class _TasksPageState extends State<TasksPage> {
               color: Colors.red[300],
               child: Column(
                 children: [
-                  const Text (
+                  const Text(
                     'Seja bem-vindo(a)!',
                     style: TextStyle(
                       fontSize: 15,
@@ -361,7 +353,7 @@ class _TasksPageState extends State<TasksPage> {
                     ),
                   ),
                   Text(
-                      displayName!,
+                    displayName!,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
@@ -370,14 +362,11 @@ class _TasksPageState extends State<TasksPage> {
                 ],
               ),
             ),
-
             ListTile(
               leading: const Icon(Icons.person_2_outlined),
               title: const Text('Editar perfil'),
-              onTap: () {
-              },
+              onTap: () {},
             ),
-
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Sair'),
@@ -385,7 +374,13 @@ class _TasksPageState extends State<TasksPage> {
                 await logout();
               },
             ),
-
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('fds'),
+              onTap: () async {
+                MyController.initializeTasks();
+              },
+            ),
           ],
         ),
       ),
@@ -398,78 +393,74 @@ class _TasksPageState extends State<TasksPage> {
               horizontal: MediaQuery.of(context).size.width * .1,
               vertical: MediaQuery.of(context).size.height * .05,
             ),
-            child: Column(
-              children: [
-                StreamBuilder<QuerySnapshot>(
-                  stream: taskRef.snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    }
+            child: ValueListenableBuilder<TasksViewState>(
+                valueListenable: MyController.state,
+                builder: (context, state, _) {
+                  switch (state) {
+                    case TasksViewState.loading:
+                      return const CircularProgressIndicator();
+                    case TasksViewState.success:
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: MyController.tasks.length,
+                        itemBuilder: (context, index) {
+                          print(MyController.tasks.length);
+                          // final document = documents[index];
+                          // final data = document.data() as Map;
+                          // DocumentSnapshot snap = snapshot.data!.docs[index];
 
-                    if (snapshot.hasError) {
-                      return Text('Ocorreu um erro ao buscar os dados');
-                    }
+                          // if ((data['Recorrência'] == "Única") && data['Contagem'] == DateTime.now()) {}
 
-                    final documents = snapshot.data!.docs;
+                          // if((data['Recorrência'] == "Recorrente") && data['Dia'] == formatterDay.format(dateControl!)){
+                          //
+                          // }
+                          //
+                          // if((data['Recorrência'] == "Anual") && data['Mês'] == formatterMonth.format(dateControl!)){
+                          //
+                          // }
 
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: documents.length,
-                      itemBuilder: (context, index) {
-                        final document = documents[index];
-                        final data = document.data() as Map;
-                        DocumentSnapshot snap = snapshot.data!.docs[index];
-
-                        if((data['Recorrência'] == "Única") && data['Contagem'] == DateTime.now()){
-                        }
-
-                        // if((data['Recorrência'] == "Recorrente") && data['Dia'] == formatterDay.format(dateControl!)){
-                        //
-                        // }
-                        //
-                        // if((data['Recorrência'] == "Anual") && data['Mês'] == formatterMonth.format(dateControl!)){
-                        //
-                        // }
-
-                        return GestureDetector(
-                          onTap: (){
-                            openDialogTask(data, snap.id);
-                          },
-                          child: Card(
-                            color: Colors.white,
-                            elevation: 10,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: ListTile(
-                              title: Text(
-                                  data!['Titulo'],
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                          return GestureDetector(
+                            //  onTap: () {
+                            //      openDialogTask(data, snap.id);
+                            //   },
+                            child: Card(
+                              color: Colors.white,
+                              elevation: 10,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              subtitle: Text(data!['Descricao'],
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis),
-                              trailing: Text(data!['Status'] + '\n' + 'Restam: ' + daysUntil(data!['Contagem'].toDate()) + ' dias'),
-                              leading: Text(data!['Recorrência'] + '\n' + data!['Data']),
+                              child: ListTile(
+                                title: Text(
+                                  MyController.tasks[index].titulo,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(MyController.tasks[index].descricao,
+                                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                                trailing: Text(MyController.tasks[index].data +
+                                    '\n' +
+                                    'Restam: ' +
+                                    // daysUntil(data!['Contagem'].toDate()) +
+
+                                    ' dias'),
+                                leading:
+                                    Text(MyController.tasks[index].recorrencia + '\n' + MyController.tasks[index].data),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-          ],
-            ),
+                          );
+                        },
+                      );
+                    case TasksViewState.error:
+                      return Container(
+                        child: Text('ERROR'),
+                      );
+                  }
+                }),
           ),
         ),
       ),
     );
   }
-
 }
-
-

@@ -15,7 +15,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   late bool _passwordVisible;
@@ -58,10 +57,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: Column(
                     children: [
-
-                      SizedBox(
-                          height: MediaQuery.of(context).size.width * 0.05
-                      ),
+                      SizedBox(height: MediaQuery.of(context).size.width * 0.05),
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: MediaQuery.of(context).size.width * .1,
@@ -85,8 +81,7 @@ class _HomePageState extends State<HomePage> {
                             if (value!.isEmpty) {
                               return 'Entre com o seu email';
                             }
-                            if (!RegExp(
-                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                            if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                                 .hasMatch(value)) {
                               return 'Insira um email válido';
                             }
@@ -95,7 +90,6 @@ class _HomePageState extends State<HomePage> {
                           keyboardType: TextInputType.emailAddress,
                         ),
                       ),
-
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: MediaQuery.of(context).size.width * .1,
@@ -113,9 +107,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _passwordVisible
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
+                                _passwordVisible ? Icons.visibility : Icons.visibility_off,
                                 color: Theme.of(context).primaryColorDark,
                               ),
                               onPressed: () {
@@ -138,7 +130,6 @@ class _HomePageState extends State<HomePage> {
                           keyboardType: TextInputType.text,
                         ),
                       ),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -165,26 +156,22 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-
                       const SizedBox(
                         height: 15,
                       ),
-
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () async {
                             try {
-                              await FirebaseAuth.instance.signInWithEmailAndPassword(
-                                  email: emailController.text,
-                                  password: passwordController.text
-                              );
+                              UserCredential newUser = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                                  email: emailController.text, password: passwordController.text);
+                              newUserId = newUser.user!.uid;
                               updateCurrentUser();
-                              if(emailController.text == "admin@gmail.com")
+                              if (emailController.text == "admin@gmail.com")
                                 Modular.to.pushNamed('/admin');
                               else
                                 Modular.to.pushNamed('/agenda');
-
                             } on FirebaseAuthException catch (e) {
                               if (e.code == 'user-not-found') {
                                 print('No user found for that email.');
@@ -227,11 +214,9 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(
                         height: 15,
                       ),
-
                       const Text(
                         'OU',
                         style: TextStyle(
@@ -239,15 +224,13 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.grey,
                         ),
                       ),
-
                       const SizedBox(
                         height: 10,
                       ),
-
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: (){
+                          onTap: () {
                             Modular.to.pushNamed('/registro');
                           },
                           borderRadius: BorderRadius.circular(20.0),
@@ -268,9 +251,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-
                       SizedBox(height: MediaQuery.of(context).size.width * 0.08),
-
                     ],
                   ),
                 ),
